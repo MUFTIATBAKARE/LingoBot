@@ -1,5 +1,5 @@
-"use client";
-import { useState } from "react";
+("use client");
+import { useEffect, useState } from "react";
 
 export default function Home() {
   const [prompts, setPrompts] = useState([]);
@@ -10,6 +10,18 @@ export default function Home() {
     e.target.elements.input.value = "";
   };
   // language detection
+  const [language, setLanguage] = useState(null);
+  useEffect(() => {
+    const detectLanguage = async () => {
+      if ("languageDetection" in window) {
+        const languageDetection = new window.LanguageDetection();
+        languageDetection.setToken(process.env.Language_Detection_Token);
+        const detectedLanguage = await languageDetection.detectLanguage();
+        setLanguage(detectedLanguage);
+      }
+    };
+    detectLanguage();
+  }, []);
 
   return (
     <div>
@@ -20,7 +32,7 @@ export default function Home() {
             {prompts.map((prompt, index) => (
               <div key={index}>
                 <li>{prompt}</li>
-                <p></p>
+                <p>{language}</p>
                 <button type="submit">Summarize</button>
                 {/* summarize reply */}
                 <label hidden for="output">
