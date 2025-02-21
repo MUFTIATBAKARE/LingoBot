@@ -6,8 +6,6 @@ export default function Home() {
   const [prompts, setPrompts] = useState([]);
   const [isSupported, setIsSupported] = useState(true);
   const [languageTag, setLanguageTag] = useState(null);
-  const [textSummary, setTextSummary] = useState("");
-  const [translate, setTranslate] = useState("");
   const [selectOption, setSelectOption] = useState("");
 
   const inputRef = useRef(null);
@@ -15,7 +13,12 @@ export default function Home() {
   const handleSubmit = (e) => {
     e.preventDefault();
     const data = inputRef.current.value;
-    const newPrompt = { text: data, language: null };
+    const newPrompt = {
+      text: data,
+      language: null,
+      summary: "",
+      translation: "",
+    };
     setPrompts((prevPrompts) => [...prevPrompts, newPrompt]);
     inputRef.current.value = "";
     const detectLanguage = async () => {
@@ -67,11 +70,20 @@ export default function Home() {
         const summarizer = await self.ai.summarizer.create(options);
         const result = await summarizer.summarize(data.text);
         console.log(result);
-        setTextSummary(result);
+        setPrompts((prevPrompts) => {
+          const updatedPrompts = [...prevPrompts];
+          updatedPrompts[updatedPrompts.length - 1].summary = result;
+          return updatedPrompts;
+        });
       };
       summarizeText();
     } else {
-      setTextSummary("The text must be more than 150 characters!");
+      setPrompts((prevPrompts) => {
+        const updatedPrompts = [...prevPrompts];
+        updatedPrompts[updatedPrompts.length - 1].summary =
+          "⚠️The text must be more than 150 characters!";
+        return updatedPrompts;
+      });
     }
   };
   const handleTranslateText = (e) => {
@@ -83,7 +95,11 @@ export default function Home() {
         targetLanguage: selectOption,
       });
       const translation = await translator.translate(data.text);
-      setTranslate(translation);
+      setPrompts((prevPrompts) => {
+        const updatedPrompts = [...prevPrompts];
+        updatedPrompts[updatedPrompts.length - 1].translation = translation;
+        return updatedPrompts;
+      });
     };
     translateText();
   };
@@ -130,8 +146,8 @@ export default function Home() {
                     </label>
                   </div>
                 </div>
-                <p>{textSummary}</p>
-                <p>{translate}</p>
+                <p>{prompt.summary}</p>
+                <p>{prompt.translation}</p>
               </div>
             ))}
           </ul>
