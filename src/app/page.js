@@ -5,15 +5,18 @@ import { FiSend } from "react-icons/fi";
 export default function Home() {
   const [prompts, setPrompts] = useState([]);
   const [isSupported, setIsSupported] = useState(true);
-  const [language, setLanguage] = useState(null);
-  const [textSummary, setTextSummary] = useState(null);
+  const [languageTag, setLanguageTag] = useState(null);
+  const [textSummary, setTextSummary] = useState("");
+  const [translate, setTranslate] = useState("");
+  const [selectOption, setSelectOption] = useState("");
 
   const inputRef = useRef(null);
 
   const handleSubmit = (e) => {
     e.preventDefault();
     const data = inputRef.current.value;
-    setPrompts((prevPrompts) => [...prevPrompts, data]);
+    const newPrompt = { text: data, language: null };
+    setPrompts((prevPrompts) => [...prevPrompts, newPrompt]);
     inputRef.current.value = "";
     const detectLanguage = async () => {
       if (!("translation" in self)) {
@@ -22,7 +25,6 @@ export default function Home() {
       }
       try {
         const detector = await self.ai.languageDetector.create();
-        // const detector = self.translation.createDetector();
         const { detectedLanguage } = (await detector.detect(data.trim()))[0];
         const languageTagToHumanReadable = (
           detectedLanguage,
@@ -37,7 +39,13 @@ export default function Home() {
           detectedLanguage,
           "en"
         );
-        setLanguage(humanReadableLanguage);
+        setLanguageTag(detectedLanguage);
+        setPrompts((prevPrompts) => {
+          const updatedPrompts = [...prevPrompts];
+          updatedPrompts[updatedPrompts.length - 1].language =
+            humanReadableLanguage;
+          return updatedPrompts;
+        });
       } catch (error) {
         console.log(error);
         return error;
@@ -49,7 +57,7 @@ export default function Home() {
   const handleTextSummarize = (e) => {
     e.preventDefault();
     const summarizeText = async () => {
-      console.log(prompts);
+      console.log(prompt.text);
       const data = prompts[prompts.length - 1];
       console.log(data);
       if (!("summarizer" in self)) {
@@ -74,6 +82,35 @@ export default function Home() {
     };
     summarizeText();
   };
+  const handleTranslateText = (e) => {
+    e.preventDefault();
+    const data = prompts[prompts.length - 1];
+    const translateText = async () => {
+      if (!("createTranslator" in self)) {
+        setIsSupported(false);
+        return;
+      }
+      console.log(selectOption);
+      console.log(data);
+      try {
+        console.log(data.text);
+        console.log(selectOption);
+        console.log(languageTag);
+        const translator = await self.ai.translator.create({
+          sourceLanguage: languageTag,
+          targetLanguage: selectOption,
+        });
+        const translation = await translator.translate(data.text);
+        console.log(translation);
+        setTranslate(translation);
+      } catch (error) {
+        console.log(error);
+        setTranslate(error.message);
+        return error;
+      }
+    };
+    translateText();
+  };
   return (
     <div className="main-container">
       {prompts.length > 0 && (
@@ -81,36 +118,49 @@ export default function Home() {
           <ul>
             {prompts.map((prompt, index) => (
               <div key={index} className="prompt-container">
-                <li>{prompt}</li>
-                <p>{language}</p>
-                <button
-                  type="button"
-                  className="summarize_btn"
-                  onClick={handleTextSummarize}
-                >
-                  Summarize
-                </button>
-                <label hidden htmlFor="output">
-                  Summary/Translation:
-                </label>
-                <output>{textSummary}</output>
-                <label htmlFor="translate">
-                  <select id="translate" className="translate-select">
-                    <option defaultValue="Translate">Translate</option>
-                    <option value="en">English</option>
-                    <option value="pt">Portuguese</option>
-                    <option value="es">Spanish</option>
-                    <option value="ru">Russian</option>
-                    <option value="tr">Turkish</option>
-                    <option Value="fr">French</option>
-                  </select>
-                </label>
+                <li>{prompt.text}</li>
+                <p>{prompt.language}</p>
+                <div className="btn-container">
+                  <button
+                    type="button"
+                    className="summarize_btn"
+                    onClick={handleTextSummarize}
+                  >
+                    Summarize
+                  </button>
+                  <div>
+                    <button
+                      type="button"
+                      className="translate-select"
+                      onClick={handleTranslateText}
+                    >
+                      Translate
+                    </button>
+                    <label htmlFor="translate">
+                      <select
+                        id="translate"
+                        value={selectOption}
+                        onChange={(e) => {
+                          setSelectOption(e.target.value);
+                        }}
+                      >
+                        <option value="en">English</option>
+                        <option value="pt">Portuguese</option>
+                        <option value="es">Spanish</option>
+                        <option value="ru">Russian</option>
+                        <option value="tr">Turkish</option>
+                        <option value="fr">French</option>
+                      </select>
+                    </label>
+                  </div>
+                </div>
+                <h5>{textSummary}</h5>
+                <h5>{translate}</h5>
               </div>
             ))}
           </ul>
         </div>
       )}
-      {/* detects language */}
 
       <form onSubmit={handleSubmit}>
         <label hidden htmlFor="input">

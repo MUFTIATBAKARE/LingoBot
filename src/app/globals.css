@@ -7,6 +7,7 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  scroll-behavior: smooth;
 }
 body {
   font-family: "Figtree", sans-serif;
@@ -72,8 +73,15 @@ li {
   border-radius: 24px;
   border: 1px solid hsl(0, 0%, 7%);
 }
-.translate-select {
-  margin-left: 8px;
+Select {
+  padding: 4px;
+  border-radius: 24px;
+  border: 1px solid hsl(0, 0%, 7%);
+  width: 20%;
+}
+.btn-container {
+  display: flex;
+  gap: 24px;
 }
 @media screen and (min-width: 501px) and (max-width: 768px) {
   .main-container {
