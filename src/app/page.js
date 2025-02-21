@@ -57,20 +57,23 @@ export default function Home() {
   const handleTextSummarize = (e) => {
     e.preventDefault();
     const data = prompts[prompts.length - 1];
-    const summarizeText = async () => {
-      const options = {
-        type: "key-points",
-        format: "plain-text",
-        length: "medium",
+    if (data.text.length > 150) {
+      const summarizeText = async () => {
+        const options = {
+          type: "key-points",
+          format: "plain-text",
+          length: "medium",
+        };
+        const summarizer = await self.ai.summarizer.create(options);
+        const result = await summarizer.summarize(data.text);
+        console.log(result);
+        setTextSummary(result);
       };
-      const summarizer = await self.ai.summarizer.create(options);
-      const result = await summarizer.summarize(data.text);
-      console.log(result);
-      setTextSummary(result);
-    };
-    summarizeText();
+      summarizeText();
+    } else {
+      setTextSummary("The text must be more than 150 characters!");
+    }
   };
-
   const handleTranslateText = (e) => {
     e.preventDefault();
     const data = prompts[prompts.length - 1];
