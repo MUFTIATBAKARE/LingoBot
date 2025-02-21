@@ -15,8 +15,41 @@ body {
   height: 100vh;
   display: flex;
 }
+body::before {
+  content: "Lingobot";
+  font-family: "Figtree", sans-serif;
+  font-size: 50px;
+  color: white;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 5;
+}
+
+body::after {
+  content: "...a text processing interface";
+  font-family: "Figtree", sans-serif;
+  font-size: 12px;
+  color: white;
+  position: absolute;
+  top: 55%;
+  left: 50%;
+  transform: translateX(-50%);
+  animation: rotateAnimation 5s linear infinite; /* Apply the animation */
+  z-index: 5;
+}
+
+@keyframes rotateAnimation {
+  from {
+    transform: translateX(-50%) rotate(0deg); /* Start rotation at 0 degrees */
+  }
+  to {
+    transform: translateX(-50%) rotate(360deg); /* End rotation at 360 degrees (full circle) */
+  }
+}
 .main-container {
-  margin: 16px auto;
+  margin: 24px auto;
   display: flex;
   flex-direction: column;
   gap: 24px;
@@ -98,5 +131,8 @@ Select {
 @media screen and (min-width: 1025px) {
   .main-container {
     min-width: 1025px;
+  }
+  body::after {
+    font-size: 24px;
   }
 }
