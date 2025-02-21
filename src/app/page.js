@@ -16,6 +16,7 @@ export default function Home() {
     if (inputRef.current.value.length === 0 || !isNaN(inputRef.current.value)) {
       setError("*Field cannot be empty, enter alphabet characters");
     } else {
+      setError("");
       const data = inputRef.current.value;
       const newPrompt = {
         text: data,

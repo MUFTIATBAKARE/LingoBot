@@ -80,6 +80,20 @@ textarea {
   padding: 8px 40px 8px 8px;
   outline: none;
   width: 100%;
+  overflow: hidden;
+}
+textarea:focus {
+  border: 1px solid hsl(243.46, 100%, 69.41%);
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+.summarize_btn:focus,
+.translate-select:focus {
+  outline: 3px solid rgba(0, 123, 255, 0.5);
+}
+.summarize_btn:active,
+.translate-select:active {
+  background-color: hsl(243.46, 100%, 69.41%);
+  transform: scale(0.98);
 }
 .snd-btn {
   position: absolute;
@@ -90,6 +104,7 @@ textarea {
   background-color: transparent;
   font-size: 20px;
   cursor: pointer;
+  transition: all 0.3s ease-in-out;
 }
 li {
   list-style: none;
@@ -109,6 +124,14 @@ li {
   padding: 8px;
   border-radius: 24px;
   border: 1px solid hsl(243.46, 100%, 69.41%);
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+  outline: none;
+}
+.summarize_btn:hover,
+.translate-select:hover {
+  background-color: hsl(243.46, 100%, 69.41%);
+  transform: scale(1.05);
 }
 Select {
   padding: 4px;
@@ -116,6 +139,13 @@ Select {
   border: 1px solid hsl(243.46, 100%, 69.41%);
   width: 30%;
   margin-left: 8px;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.3s ease-in-out;
+}
+Select:focus {
+  border-color: hsl(243.46, 100%, 69.41%);
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
 }
 .btn-container {
   display: flex;
