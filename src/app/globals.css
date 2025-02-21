@@ -82,6 +82,7 @@ Select {
 .btn-container {
   display: flex;
   gap: 24px;
+  margin-bottom: 24px;
 }
 @media screen and (min-width: 501px) and (max-width: 768px) {
   .main-container {

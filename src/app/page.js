@@ -56,58 +56,31 @@ export default function Home() {
 
   const handleTextSummarize = (e) => {
     e.preventDefault();
+    const data = prompts[prompts.length - 1];
     const summarizeText = async () => {
-      console.log(prompt.text);
-      const data = prompts[prompts.length - 1];
-      console.log(data);
-      if (!("summarizer" in self)) {
-        setIsSupported(false);
-        return;
-      }
-      try {
-        const options = {
-          type: "key-points",
-          format: "plain-text",
-          length: "medium",
-        };
-
-        const summarizer = await self.ai.summarizer.create(options);
-        const result = await summarizer.summarize(data);
-        const { summary } = result[0];
-        setTextSummary(summary);
-      } catch (error) {
-        console.log(error);
-        return error;
-      }
+      const options = {
+        type: "key-points",
+        format: "plain-text",
+        length: "medium",
+      };
+      const summarizer = await self.ai.summarizer.create(options);
+      const result = await summarizer.summarize(data.text);
+      console.log(result);
+      setTextSummary(result);
     };
     summarizeText();
   };
+
   const handleTranslateText = (e) => {
     e.preventDefault();
     const data = prompts[prompts.length - 1];
     const translateText = async () => {
-      if (!("createTranslator" in self)) {
-        setIsSupported(false);
-        return;
-      }
-      console.log(selectOption);
-      console.log(data);
-      try {
-        console.log(data.text);
-        console.log(selectOption);
-        console.log(languageTag);
-        const translator = await self.ai.translator.create({
-          sourceLanguage: languageTag,
-          targetLanguage: selectOption,
-        });
-        const translation = await translator.translate(data.text);
-        console.log(translation);
-        setTranslate(translation);
-      } catch (error) {
-        console.log(error);
-        setTranslate(error.message);
-        return error;
-      }
+      const translator = await self.ai.translator.create({
+        sourceLanguage: languageTag,
+        targetLanguage: selectOption,
+      });
+      const translation = await translator.translate(data.text);
+      setTranslate(translation);
     };
     translateText();
   };
@@ -154,8 +127,8 @@ export default function Home() {
                     </label>
                   </div>
                 </div>
-                <h5>{textSummary}</h5>
-                <h5>{translate}</h5>
+                <p>{textSummary}</p>
+                <p>{translate}</p>
               </div>
             ))}
           </ul>
