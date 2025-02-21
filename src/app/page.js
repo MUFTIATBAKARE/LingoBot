@@ -7,54 +7,59 @@ export default function Home() {
   const [isSupported, setIsSupported] = useState(true);
   const [languageTag, setLanguageTag] = useState(null);
   const [selectOption, setSelectOption] = useState("");
+  const [error, setError] = useState("");
 
   const inputRef = useRef(null);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const data = inputRef.current.value;
-    const newPrompt = {
-      text: data,
-      language: null,
-      summary: "",
-      translation: "",
-    };
-    setPrompts((prevPrompts) => [...prevPrompts, newPrompt]);
-    inputRef.current.value = "";
-    const detectLanguage = async () => {
-      if (!("translation" in self)) {
-        setIsSupported(false);
-        return;
-      }
-      try {
-        const detector = await self.ai.languageDetector.create();
-        const { detectedLanguage } = (await detector.detect(data.trim()))[0];
-        const languageTagToHumanReadable = (
-          detectedLanguage,
-          targetLanguage
-        ) => {
-          const displayNames = new Intl.DisplayNames([targetLanguage], {
-            type: "language",
+    if (inputRef.current.value.length === 0 || !isNaN(inputRef.current.value)) {
+      setError("*Field cannot be empty, enter alphabet characters");
+    } else {
+      const data = inputRef.current.value;
+      const newPrompt = {
+        text: data,
+        language: null,
+        summary: "",
+        translation: "",
+      };
+      setPrompts((prevPrompts) => [...prevPrompts, newPrompt]);
+      inputRef.current.value = "";
+      const detectLanguage = async () => {
+        if (!("translation" in self)) {
+          setIsSupported(false);
+          return;
+        }
+        try {
+          const detector = await self.ai.languageDetector.create();
+          const { detectedLanguage } = (await detector.detect(data.trim()))[0];
+          const languageTagToHumanReadable = (
+            detectedLanguage,
+            targetLanguage
+          ) => {
+            const displayNames = new Intl.DisplayNames([targetLanguage], {
+              type: "language",
+            });
+            return displayNames.of(detectedLanguage);
+          };
+          const humanReadableLanguage = languageTagToHumanReadable(
+            detectedLanguage,
+            "en"
+          );
+          setLanguageTag(detectedLanguage);
+          setPrompts((prevPrompts) => {
+            const updatedPrompts = [...prevPrompts];
+            updatedPrompts[updatedPrompts.length - 1].language =
+              humanReadableLanguage;
+            return updatedPrompts;
           });
-          return displayNames.of(detectedLanguage);
-        };
-        const humanReadableLanguage = languageTagToHumanReadable(
-          detectedLanguage,
-          "en"
-        );
-        setLanguageTag(detectedLanguage);
-        setPrompts((prevPrompts) => {
-          const updatedPrompts = [...prevPrompts];
-          updatedPrompts[updatedPrompts.length - 1].language =
-            humanReadableLanguage;
-          return updatedPrompts;
-        });
-      } catch (error) {
-        console.log(error);
-        return error;
-      }
-    };
-    detectLanguage();
+        } catch (error) {
+          console.log(error);
+          return error;
+        }
+      };
+      detectLanguage();
+    }
   };
 
   const handleTextSummarize = (e) => {
@@ -113,13 +118,16 @@ export default function Home() {
                 <li>{prompt.text}</li>
                 <p>{prompt.language}</p>
                 <div className="btn-container">
-                  <button
-                    type="button"
-                    className="summarize_btn"
-                    onClick={handleTextSummarize}
-                  >
-                    Summarize
-                  </button>
+                  {prompt.text.length > 150 &&
+                    prompt.language === "English" && (
+                      <button
+                        type="button"
+                        className="summarize_btn"
+                        onClick={handleTextSummarize}
+                      >
+                        Summarize
+                      </button>
+                    )}
                   <div>
                     <button
                       type="button"
@@ -163,6 +171,7 @@ export default function Home() {
           ref={inputRef}
           placeholder="Type here..."
         ></textarea>
+        <p>{error}</p>
         <button className="snd-btn" type="submit">
           <FiSend />
         </button>
