@@ -7,16 +7,19 @@ export default function Home() {
   const [isSupported, setIsSupported] = useState(true);
   const [languageTag, setLanguageTag] = useState(null);
   const [selectOption, setSelectOption] = useState("");
+  const [submitError, setSubmitError] = useState("");
   const [error, setError] = useState("");
+  const [summarizeloading, setSummarizeLoading] = useState(false);
+  const [translateloading, setTranslateLoading] = useState(false);
 
   const inputRef = useRef(null);
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (inputRef.current.value.length === 0 || !isNaN(inputRef.current.value)) {
-      setError("*Field cannot be empty, enter alphabet characters");
+      setSubmitError("*Field cannot be empty, enter alphabet characters");
     } else {
-      setError("");
+      setSubmitError("");
       const data = inputRef.current.value;
       const newPrompt = {
         text: data,
@@ -29,6 +32,7 @@ export default function Home() {
       const detectLanguage = async () => {
         if (!("translation" in self)) {
           setIsSupported(false);
+          setError("Translation service is not supported.");
           return;
         }
         try {
@@ -55,7 +59,7 @@ export default function Home() {
             return updatedPrompts;
           });
         } catch (error) {
-          console.log(error);
+          setError("Failed to detect language. Please try again.");
           return error;
         }
       };
@@ -65,6 +69,7 @@ export default function Home() {
 
   const handleTextSummarize = (e) => {
     e.preventDefault();
+    setSummarizeLoading(true);
     const data = prompts[prompts.length - 1];
     if (data.text.length > 150) {
       const summarizeText = async () => {
@@ -81,6 +86,7 @@ export default function Home() {
           updatedPrompts[updatedPrompts.length - 1].summary = result;
           return updatedPrompts;
         });
+        setSummarizeLoading(false);
       };
       summarizeText();
     } else {
@@ -90,10 +96,12 @@ export default function Home() {
           "⚠️The text must be more than 150 characters!";
         return updatedPrompts;
       });
+      setSummarizeLoading(false);
     }
   };
   const handleTranslateText = (e) => {
     e.preventDefault();
+    setTranslateLoading(true);
     const data = prompts[prompts.length - 1];
     const translateText = async () => {
       const translator = await self.ai.translator.create({
@@ -106,6 +114,7 @@ export default function Home() {
         updatedPrompts[updatedPrompts.length - 1].translation = translation;
         return updatedPrompts;
       });
+      setTranslateLoading(false);
     };
     translateText();
   };
@@ -117,7 +126,7 @@ export default function Home() {
             {prompts.map((prompt, index) => (
               <div key={index} className="prompt-container">
                 <li>{prompt.text}</li>
-                <p>{prompt.language}</p>
+                <p>{error ? error : prompt.language}</p>
                 <div className="btn-container">
                   {prompt.text.length > 150 &&
                     prompt.language === "English" && (
@@ -126,7 +135,7 @@ export default function Home() {
                         className="summarize_btn"
                         onClick={handleTextSummarize}
                       >
-                        Summarize
+                        {summarizeloading ? "Summarizing..." : "Summarize"}
                       </button>
                     )}
                   <div>
@@ -135,7 +144,7 @@ export default function Home() {
                       className="translate-select"
                       onClick={handleTranslateText}
                     >
-                      Translate
+                      {translateloading ? "Translating..." : "Translate"}
                     </button>
                     <label htmlFor="translate">
                       <select
@@ -172,7 +181,7 @@ export default function Home() {
           ref={inputRef}
           placeholder="Type here..."
         ></textarea>
-        <p>{error}</p>
+        <p>{submitError}</p>
         <button className="snd-btn" type="submit">
           <FiSend />
         </button>
