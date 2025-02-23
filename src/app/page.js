@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { FiSend } from "react-icons/fi";
 export default function Home() {
   const [prompts, setPrompts] = useState([]);
@@ -9,11 +9,9 @@ export default function Home() {
   const [selectOption, setSelectOption] = useState("");
   const [submitError, setSubmitError] = useState("");
   const [error, setError] = useState("");
-  const [summarizeloading, setSummarizeLoading] = useState(false);
-  const [translateloading, setTranslateLoading] = useState(false);
+  // const [summarizeloading, setSummarizeLoading] = useState(false);
 
   const inputRef = useRef(null);
-
   const handleSubmit = (e) => {
     e.preventDefault();
     if (inputRef.current.value.length === 0 || !isNaN(inputRef.current.value)) {
@@ -26,13 +24,14 @@ export default function Home() {
         language: null,
         summary: "",
         translation: "",
+        translateloading: false,
+        summarizeloading: false,
       };
       setPrompts((prevPrompts) => [...prevPrompts, newPrompt]);
       inputRef.current.value = "";
       const detectLanguage = async () => {
         if (!("translation" in self)) {
           setIsSupported(false);
-          setError("Translation service is not supported.");
           return;
         }
         try {
@@ -67,54 +66,69 @@ export default function Home() {
     }
   };
 
-  const handleTextSummarize = (e) => {
+  const handleTextSummarize = (e, prompt) => {
     e.preventDefault();
-    setSummarizeLoading(true);
-    const data = prompts[prompts.length - 1];
-    if (data.text.length > 150) {
+    setPrompts((prevPrompts) => {
+      const updatedPrompts = [...prevPrompts];
+      const promptIndex = prevPrompts.indexOf(prompt);
+      updatedPrompts[promptIndex].summarizeloading = true;
+      return updatedPrompts;
+    });
+    if (prompt.text.length > 150) {
       const summarizeText = async () => {
         const options = {
           type: "key-points",
           format: "plain-text",
-          length: "medium",
+          length: "short",
         };
         const summarizer = await self.ai.summarizer.create(options);
-        const result = await summarizer.summarize(data.text);
-        console.log(result);
+        const result = await summarizer.summarize(prompt.text);
         setPrompts((prevPrompts) => {
           const updatedPrompts = [...prevPrompts];
-          updatedPrompts[updatedPrompts.length - 1].summary = result;
+          const promptIndex = prevPrompts.indexOf(prompt);
+          updatedPrompts[promptIndex].summary = result;
+          updatedPrompts[promptIndex].summarizeloading = false;
           return updatedPrompts;
         });
-        setSummarizeLoading(false);
       };
       summarizeText();
     } else {
       setPrompts((prevPrompts) => {
         const updatedPrompts = [...prevPrompts];
-        updatedPrompts[updatedPrompts.length - 1].summary =
+        const promptIndex = prevPrompts.indexOf(prompt);
+        updatedPrompts[promptIndex].summary =
           "⚠️The text must be more than 150 characters!";
         return updatedPrompts;
       });
-      setSummarizeLoading(false);
+      setPrompts((prevPrompts) => {
+        const updatedPrompts = [...prevPrompts];
+        const promptIndex = prevPrompts.indexOf(prompt);
+        updatedPrompts[promptIndex].summarizeloading = false;
+        return updatedPrompts;
+      });
     }
   };
-  const handleTranslateText = (e) => {
+  const handleTranslateText = (e, prompt) => {
     e.preventDefault();
-    setTranslateLoading(true);
-    const data = prompts[prompts.length - 1];
+    setPrompts((prevPrompts) => {
+      const updatedPrompts = [...prevPrompts];
+      const promptIndex = prevPrompts.indexOf(prompt);
+      updatedPrompts[promptIndex].translateloading = true;
+      return updatedPrompts;
+    });
     const translateText = async () => {
       const translator = await self.ai.translator.create({
         sourceLanguage: languageTag,
         targetLanguage: selectOption,
       });
-      const translation = await translator.translate(data.text);
+      const translation = await translator.translate(prompt.text);
       setPrompts((prevPrompts) => {
         const updatedPrompts = [...prevPrompts];
-        updatedPrompts[updatedPrompts.length - 1].translation = translation;
+        const promptIndex = prevPrompts.indexOf(prompt);
+        updatedPrompts[promptIndex].translation = translation;
+        updatedPrompts[promptIndex].translateloading = false;
         return updatedPrompts;
       });
-      setTranslateLoading(false);
     };
     translateText();
   };
@@ -133,18 +147,20 @@ export default function Home() {
                       <button
                         type="button"
                         className="summarize_btn"
-                        onClick={handleTextSummarize}
+                        onClick={(e) => handleTextSummarize(e, prompt)}
                       >
-                        {summarizeloading ? "Summarizing..." : "Summarize"}
+                        {prompt.summarizeloading
+                          ? "Summarizing..."
+                          : "Summarize"}
                       </button>
                     )}
                   <div>
                     <button
                       type="button"
                       className="translate-select"
-                      onClick={handleTranslateText}
+                      onClick={(e) => handleTranslateText(e, prompt)}
                     >
-                      {translateloading ? "Translating..." : "Translate"}
+                      {prompt.translateloading ? "Translating..." : "Translate"}
                     </button>
                     <label htmlFor="translate">
                       <select
