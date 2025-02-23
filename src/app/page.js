@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 import { FiSend } from "react-icons/fi";
 export default function Home() {
   const [prompts, setPrompts] = useState([]);
@@ -9,7 +9,6 @@ export default function Home() {
   const [selectOption, setSelectOption] = useState("");
   const [submitError, setSubmitError] = useState("");
   const [error, setError] = useState("");
-  // const [summarizeloading, setSummarizeLoading] = useState(false);
 
   const inputRef = useRef(null);
   const handleSubmit = (e) => {
